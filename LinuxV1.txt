@@ -16,6 +16,10 @@ function Linux.Create(config)
     MainFrame.Draggable = true
     MainFrame.Parent = ScreenGui
 
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.Parent = MainFrame
+
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Size = UDim2.new(1, 0, 0, 30)
     TitleLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -45,6 +49,9 @@ function Linux.Create(config)
     TabListLayout.Parent = TabContainer
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabListLayout.Padding = UDim.new(0, 5)
+    TabListLayout.FillDirection = Enum.FillDirection.Vertical
+    TabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 
     local ContentFrame = Instance.new("Frame")
     ContentFrame.Size = UDim2.new(1, -config.TabWidth, 1, -50)
@@ -64,16 +71,19 @@ function Linux.Create(config)
         TabFrame.Parent = ContentFrame
 
         local ScrollFrame = Instance.new("ScrollingFrame")
-        ScrollFrame.Size = UDim2.new(1, 0, 1, 0)
+        ScrollFrame.Size = UDim2.new(1, -10, 1, -10)
+        ScrollFrame.Position = UDim2.new(0, 5, 0, 5)
         ScrollFrame.BackgroundTransparency = 1
         ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
         ScrollFrame.ScrollBarThickness = 4
+        ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(150, 150, 255)
         ScrollFrame.Parent = TabFrame
 
         local UIListLayout = Instance.new("UIListLayout")
         UIListLayout.Parent = ScrollFrame
         UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        UIListLayout.Padding = UDim.new(0, 5)
+        UIListLayout.Padding = UDim.new(0, 8)
+        UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
         ScrollFrame.ChildAdded:Connect(function()
             ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
@@ -81,18 +91,21 @@ function Linux.Create(config)
 
         local TabButton = Instance.new("TextButton")
         TabButton.Size = UDim2.new(1, -10, 0, 30)
-        TabButton.Position = UDim2.new(0, 5, 0, 0)
         TabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
         TabButton.Text = tabConfig.Name
         TabButton.TextColor3 = Color3.fromRGB(150, 150, 255)
         TabButton.TextSize = 14
-        TabButton.Font = Enum.Font.SourceSans
+        TabButton.Font = Enum.Font.SourceSansBold
         TabButton.Parent = TabContainer
+
+        local TabUICorner = Instance.new("UICorner")
+        TabUICorner.CornerRadius = UDim.new(0, 6)
+        TabUICorner.Parent = TabButton
 
         if tabConfig.Icon and tabConfig.Icon.Enabled then
             local Icon = Instance.new("ImageLabel")
             Icon.Size = UDim2.new(0, 20, 0, 20)
-            Icon.Position = UDim2.new(0, 5, 0.5, -10)
+            Icon.Position = UDim2.new(0, 10, 0.5, -10)
             Icon.BackgroundTransparency = 1
             Icon.Image = tabConfig.Icon.Image
             Icon.Parent = TabButton
@@ -107,33 +120,52 @@ function Linux.Create(config)
             currentTab = TabFrame
         end)
 
+        if not currentTab then
+            TabFrame.Visible = true
+            currentTab = TabFrame
+        end
+
         local tab = {}
 
         function tab:Button(buttonConfig)
             local Button = Instance.new("TextButton")
-            Button.Size = UDim2.new(1, -10, 0, 30)
-            Button.Position = UDim2.new(0, 5, 0, 0)
-            Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            Button.Size = UDim2.new(1, -10, 0, 35)
+            Button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
             Button.Text = buttonConfig.Name
             Button.TextColor3 = Color3.fromRGB(150, 150, 255)
             Button.TextSize = 14
-            Button.Font = Enum.Font.SourceSans
+            Button.Font = Enum.Font.SourceSansBold
             Button.Parent = ScrollFrame
 
+            local ButtonUICorner = Instance.new("UICorner")
+            ButtonUICorner.CornerRadius = UDim.new(0, 6)
+            ButtonUICorner.Parent = Button
+
+            local ButtonUIStroke = Instance.new("UIStroke")
+            ButtonUIStroke.Color = Color3.fromRGB(60, 60, 60)
+            ButtonUIStroke.Thickness = 1
+            ButtonUIStroke.Parent = Button
+
             Button.MouseButton1Click:Connect(function()
+                TweenService:Create(Button, TweenInfo.new(0.2), {
+                    BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                }):Play()
+                wait(0.2)
+                TweenService:Create(Button, TweenInfo.new(0.2), {
+                    BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+                }):Play()
                 buttonConfig.Callback()
             end)
         end
 
         function tab:Toggle(toggleConfig)
             local ToggleFrame = Instance.new("Frame")
-            ToggleFrame.Size = UDim2.new(1, -10, 0, 30)
-            ToggleFrame.Position = UDim2.new(0, 5, 0, 0)
+            ToggleFrame.Size = UDim2.new(1, -10, 0, 35)
             ToggleFrame.BackgroundTransparency = 1
             ToggleFrame.Parent = ScrollFrame
 
             local ToggleLabel = Instance.new("TextLabel")
-            ToggleLabel.Size = UDim2.new(0.8, 0, 1, 0)
+            ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
             ToggleLabel.BackgroundTransparency = 1
             ToggleLabel.Text = toggleConfig.Name
             ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -142,21 +174,40 @@ function Linux.Create(config)
             ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
             ToggleLabel.Parent = ToggleFrame
 
-            local ToggleButton = Instance.new("TextButton")
+            local ToggleButton = Instance.new("Frame")
             ToggleButton.Size = UDim2.new(0, 40, 0, 20)
-            ToggleButton.Position = UDim2.new(1, -40, 0.5, -10)
-            ToggleButton.BackgroundColor3 = toggleConfig.Default and Color3.fromRGB(150, 150, 255) or Color3.fromRGB(40, 40, 40)
-            ToggleButton.Text = ""
+            ToggleButton.Position = UDim2.new(1, -45, 0.5, -10)
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             ToggleButton.Parent = ToggleFrame
+
+            local ToggleUICorner = Instance.new("UICorner")
+            ToggleUICorner.CornerRadius = UDim.new(0, 10)
+            ToggleUICorner.Parent = ToggleButton
+
+            local ToggleCircle = Instance.new("Frame")
+            ToggleCircle.Size = UDim2.new(0, 16, 0, 16)
+            ToggleCircle.Position = toggleConfig.Default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+            ToggleCircle.BackgroundColor3 = toggleConfig.Default and Color3.fromRGB(150, 150, 255) or Color3.fromRGB(100, 100, 100)
+            ToggleCircle.Parent = ToggleButton
+
+            local CircleUICorner = Instance.new("UICorner")
+            CircleUICorner.CornerRadius = UDim.new(0, 10)
+            CircleUICorner.Parent = ToggleCircle
 
             local state = toggleConfig.Default
 
-            ToggleButton.MouseButton1Click:Connect(function()
-                state = not state
-                TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
-                    BackgroundColor3 = state and Color3.fromRGB(150, 150, 255) or Color3.fromRGB(40, 40, 40)
-                }):Play()
-                toggleConfig.Callback(state)
+            ToggleButton.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    state = not state
+                    TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
+                        BackgroundColor3 = state and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(40, 40, 40)
+                    }):Play()
+                    TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {
+                        BackgroundColor3 = state and Color3.fromRGB(150, 150, 255) or Color3.fromRGB(100, 100, 100),
+                        Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+                    }):Play()
+                    toggleConfig.Callback(state)
+                end
             end)
         end
 
